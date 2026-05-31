@@ -26,36 +26,51 @@ export default function ChamberValves({ state, onChange }) {
     });
   };
 
+  const getValveStatus = (valveKey) => {
+    const valve = state.valves[valveKey];
+    if (!valve) return "success";
+    const { morphology, stenosis, regurgitation } = valve;
+    if (
+      stenosis === "Severe" ||
+      stenosis === "Moderate" ||
+      regurgitation === "Severe" ||
+      regurgitation === "Moderate"
+    ) {
+      return "danger";
+    }
+    if (
+      stenosis === "Mild" ||
+      regurgitation === "Mild" ||
+      regurgitation === "Trivial" ||
+      (morphology && morphology !== "Normal")
+    ) {
+      return "warning";
+    }
+    return "success";
+  };
+
   return (
     <div className="card shadow-sm animate-fade-in">
-      <div className="card-header bg-primary text-white pb-0">
-        <h2 className="card-title mb-2">Chamber Assessment & Valvular Morphology</h2>
-        {/* Sub-tab navigation */}
-        <div className="flex space-x-1 mt-2">
+      <div className="card-header bg-primary text-white">
+        <h2 className="card-title">Chamber Assessment & Valvular Morphology</h2>
+      </div>
+
+      <div className="card-body">
+        {/* Sub-tab segmented controller */}
+        <div className="segmented-controller">
           <button
             onClick={() => setActiveSubTab("chambers")}
-            className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
-              activeSubTab === "chambers"
-                ? "bg-white text-primary"
-                : "bg-primary-dark text-white-opacity hover:bg-primary-light-opacity"
-            }`}
+            className={`segmented-button ${activeSubTab === "chambers" ? "active" : ""}`}
           >
             Chambers & Septa
           </button>
           <button
             onClick={() => setActiveSubTab("valves")}
-            className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
-              activeSubTab === "valves"
-                ? "bg-white text-primary"
-                : "bg-primary-dark text-white-opacity hover:bg-primary-light-opacity"
-            }`}
+            className={`segmented-button ${activeSubTab === "valves" ? "active" : ""}`}
           >
             Valvular Assessment
           </button>
         </div>
-      </div>
-
-      <div className="card-body">
         {activeSubTab === "chambers" ? (
           <div className="space-y-6">
             {/* LV Section */}
@@ -234,21 +249,21 @@ export default function ChamberValves({ state, onChange }) {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Valve Mini Tabs */}
-            <div className="flex border-b border-gray-200">
-              {["mitral", "aortic", "tricuspid", "pulmonary"].map((vKey) => (
-                <button
-                  key={vKey}
-                  onClick={() => setActiveValve(vKey)}
-                  className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all ${
-                    activeValve === vKey
-                      ? "border-primary text-primary bg-primary-light"
-                      : "border-transparent text-gray-500 hover:text-primary hover:bg-gray-50"
-                  }`}
-                >
-                  {vKey.charAt(0).toUpperCase() + vKey.slice(1)} Valve
-                </button>
-              ))}
+            {/* Valve Selector Capsules */}
+            <div className="valve-capsule-container">
+              {["mitral", "aortic", "tricuspid", "pulmonary"].map((vKey) => {
+                const status = getValveStatus(vKey);
+                return (
+                  <button
+                    key={vKey}
+                    onClick={() => setActiveValve(vKey)}
+                    className={`valve-capsule ${activeValve === vKey ? "active" : ""}`}
+                  >
+                    <span className={`status-dot ${status}`} />
+                    <span>{vKey.charAt(0).toUpperCase() + vKey.slice(1)} Valve</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Selected Valve Details Form */}

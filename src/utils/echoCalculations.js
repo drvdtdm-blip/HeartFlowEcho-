@@ -19,6 +19,7 @@ export const NORMAL_RANGES = {
   avMeanGradient: { hint: "<5 mmHg", min: 1, max: 5, unit: "mmHg" },
   mvGradient: { hint: "<3 mmHg", min: 0.5, max: 3, unit: "mmHg" },
   trVelocity: { hint: "<2.8 m/s", min: 1.0, max: 2.8, unit: "m/s" },
+  mva: { hint: "4.0-6.0 cm²", min: 4.0, max: 6.0, unit: "cm²" },
 };
 
 /**
@@ -154,7 +155,11 @@ export function generateAutoImpression(state) {
     
     let parts = [];
     if (valve.stenosis && valve.stenosis !== "None") {
-      parts.push(`${valve.stenosis.toLowerCase()} ${vName} Stenosis`);
+      let stenText = `${valve.stenosis.toLowerCase()} ${vName} Stenosis`;
+      if (key === "mitral" && state.measurements.mva) {
+        stenText += ` (MVA ${state.measurements.mva} cm²)`;
+      }
+      parts.push(stenText);
     }
     if (valve.regurgitation && valve.regurgitation !== "None") {
       parts.push(`${valve.regurgitation.toLowerCase()} ${vName} Regurgitation`);
@@ -165,14 +170,26 @@ export function generateAutoImpression(state) {
       if (valve.morphology && valve.morphology !== "Normal") {
         desc += ` (${valve.morphology.toLowerCase()} morphology)`;
       }
+      if (key === "mitral" && state.measurements.mva && valve.stenosis === "None") {
+        desc += ` (MVA ${state.measurements.mva} cm²)`;
+      }
       if (valve.remarks) {
         desc += ` - ${valve.remarks}`;
       }
       valveFindings.push(desc);
     } else if (valve.morphology && valve.morphology !== "Normal") {
       let desc = `${vName} valve morphology is ${valve.morphology.toLowerCase()}`;
+      if (key === "mitral" && state.measurements.mva) {
+        desc += ` (MVA ${state.measurements.mva} cm²)`;
+      }
       if (valve.remarks) {
         desc += ` (${valve.remarks})`;
+      }
+      valveFindings.push(desc);
+    } else if (key === "mitral" && state.measurements.mva) {
+      let desc = `Mitral Valve Area (MVA) is ${state.measurements.mva} cm²`;
+      if (valve.remarks) {
+        desc += ` - ${valve.remarks}`;
       }
       valveFindings.push(desc);
     }

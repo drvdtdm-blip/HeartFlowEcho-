@@ -32,6 +32,7 @@ export const DEFAULT_REPORT_STATE = {
     avMeanGradient: "",
     mvGradient: "",
     trVelocity: "",
+    mva: "",
   },
   lv: {
     size: "Normal",
@@ -350,6 +351,7 @@ export const TEMPLATES = {
         avMeanGradient: "3",
         mvGradient: "12",
         trVelocity: "3.5",
+        mva: "1.0",
       },
       lv: {
         size: "Normal",

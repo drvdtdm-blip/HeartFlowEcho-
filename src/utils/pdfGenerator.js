@@ -145,6 +145,7 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
     { key: "avPeakGradient", label: "AV Peak Gradient" },
     { key: "avMeanGradient", label: "AV Mean Gradient" },
     { key: "mvGradient", label: "MV Mean Gradient (if MS)" },
+    { key: "mva", label: "Mitral Valve Area (MVA)" },
   ];
 
   // Draw table header for both columns

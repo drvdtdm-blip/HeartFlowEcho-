@@ -210,6 +210,7 @@ export default function Measurements({ state, onChange }) {
             { key: "avPeakGradient", label: "AV Peak Gradient", placeholder: "e.g. 6" },
             { key: "avMeanGradient", label: "AV Mean Gradient", placeholder: "e.g. 3" },
             { key: "mvGradient", label: "MV Mean Gradient (if MS)", placeholder: "e.g. 8" },
+            { key: "mva", label: "Mitral Valve Area (MVA)", placeholder: "e.g. 4.0" },
           ].map(({ key, label, placeholder }) => {
             const outRange = isOutOfRange(key, state.measurements[key]);
             return (

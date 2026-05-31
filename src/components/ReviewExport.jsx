@@ -235,6 +235,7 @@ export default function ReviewExport({ state, onChange, onSaveReport, hospitalHe
                         { k: "avPeakGradient", label: "AV Peak Grad" },
                         { k: "avMeanGradient", label: "AV Mean Grad" },
                         { k: "mvGradient", label: "MV Mean Grad (MS)" },
+                        { k: "mva", label: "Mitral Valve Area" },
                       ].map(({ k, label }) => (
                         <tr className="border-b border-gray-200" key={k}>
                           <td className="p-1 font-bold border-r border-gray-200">{label}</td>

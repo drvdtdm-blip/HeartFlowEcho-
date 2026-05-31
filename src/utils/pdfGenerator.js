@@ -296,15 +296,31 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
   };
 
   // LV findings summary
-  const lvSumm = `Cavity: ${state.lv.size || "Normal"}. Systolic function: ${state.lv.systolic || "Normal"}. RWMA: ${state.lv.rwma || "Absent"}${state.lv.rwma === "Present" ? ` (${state.lv.rwmaTerritory} territory)` : ""}. Diastolic function: ${state.lv.diastolic || "Normal"}. LVH: ${state.lv.lvh || "None"}.`;
+  const isLvNormal = (state.lv.size || "Normal") === "Normal" &&
+                     (state.lv.systolic || "Normal") === "Normal" &&
+                     (state.lv.rwma || "Absent") === "Absent" &&
+                     (state.lv.diastolic || "Normal") === "Normal" &&
+                     (state.lv.lvh || "None") === "None";
+  const lvSumm = isLvNormal
+    ? "Normal"
+    : `Cavity: ${state.lv.size || "Normal"}. Systolic function: ${state.lv.systolic || "Normal"}. RWMA: ${state.lv.rwma || "Absent"}${state.lv.rwma === "Present" ? ` (${state.lv.rwmaTerritory} territory)` : ""}. Diastolic function: ${state.lv.diastolic || "Normal"}. LVH: ${state.lv.lvh || "None"}.`;
   printFindingLine("Left Ventricle (LV)", lvSumm);
 
   // RV findings summary
-  const rvSumm = `Size: ${state.rv.size || "Normal"}. Systolic function: ${state.rv.function || "Normal"}. TAPSE: ${state.measurements.tapse ? `${state.measurements.tapse} mm` : "N/A"}.`;
+  const isRvNormal = (state.rv.size || "Normal") === "Normal" &&
+                     (state.rv.function || "Normal") === "Normal";
+  const rvSumm = isRvNormal
+    ? "Normal"
+    : `Size: ${state.rv.size || "Normal"}. Systolic function: ${state.rv.function || "Normal"}. TAPSE: ${state.measurements.tapse ? `${state.measurements.tapse} mm` : "N/A"}.`;
   printFindingLine("Right Ventricle (RV)", rvSumm);
 
   // Atria & Septum findings summary
-  const atriaSumm = `LA Chamber: ${state.laRa.laSize || "Normal"}. RA Chamber: ${state.laRa.raSize || "Normal"}. Interatrial Septum (IAS): ${state.ias || "Intact"}.`;
+  const isAtriaNormal = (state.laRa.laSize || "Normal") === "Normal" &&
+                        (state.laRa.raSize || "Normal") === "Normal" &&
+                        (state.ias || "Intact") === "Intact";
+  const atriaSumm = isAtriaNormal
+    ? "Normal"
+    : `LA Chamber: ${state.laRa.laSize || "Normal"}. RA Chamber: ${state.laRa.raSize || "Normal"}. Interatrial Septum (IAS): ${state.ias || "Intact"}.`;
   printFindingLine("Atria & Septa", atriaSumm);
 
   // Valves
@@ -312,12 +328,24 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
   valvesArr.forEach(vKey => {
     const valve = state.valves[vKey];
     const vName = vKey.charAt(0).toUpperCase() + vKey.slice(1);
-    const vDetails = `Morphology: ${valve.morphology || "Normal"}. Regurgitation: ${valve.regurgitation || "None"}. Stenosis: ${valve.stenosis || "None"}.${valve.remarks ? ` Remarks: ${valve.remarks}` : ""}`;
+    const isValveNormal = (valve.morphology || "Normal") === "Normal" &&
+                          (valve.stenosis || "None") === "None" &&
+                          (valve.regurgitation || "None") === "None" &&
+                          !valve.remarks;
+    const vDetails = isValveNormal
+      ? "Normal"
+      : `Morphology: ${valve.morphology || "Normal"}. Regurgitation: ${valve.regurgitation || "None"}. Stenosis: ${valve.stenosis || "None"}.${valve.remarks ? ` Remarks: ${valve.remarks}` : ""}`;
     printFindingLine(`${vName} Valve`, vDetails);
   });
 
   // Extra (Pericardium, Aorta, Clots)
-  const extraSumm = `Pericardial Effusion: ${state.pericardium.effusion || "None"}. Aortic Root: ${state.aorta.root || "Normal"}. Ascending Aorta: ${state.aorta.ascending || "Normal"}. Intracardiac Masses/Clots: ${state.masses.clotVegMass || "Absent"}.`;
+  const isExtraNormal = (state.pericardium.effusion || "None") === "None" &&
+                        (state.aorta.root || "Normal") === "Normal" &&
+                        (state.aorta.ascending || "Normal") === "Normal" &&
+                        (state.masses.clotVegMass || "Absent") === "Absent";
+  const extraSumm = isExtraNormal
+    ? "Normal"
+    : `Pericardial Effusion: ${state.pericardium.effusion || "None"}. Aortic Root: ${state.aorta.root || "Normal"}. Ascending Aorta: ${state.aorta.ascending || "Normal"}. Intracardiac Masses/Clots: ${state.masses.clotVegMass || "Absent"}.`;
   printFindingLine("Pericardium & Aorta", extraSumm);
 
   y += 4;

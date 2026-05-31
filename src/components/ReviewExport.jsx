@@ -268,20 +268,49 @@ export default function ReviewExport({ state, onChange, onSaveReport, hospitalHe
                 {/* Structured Findings */}
                 <div className="font-bold text-primary mb-1 border-b pb-0.5 text-[11px]">2D AND DOPPLER VALVE FINDINGS</div>
                 <div className="space-y-1 text-[10px] mb-4">
-                  <div><strong>Left Ventricle (LV):</strong> Cavity: {state.lv.size}, Systolic: {state.lv.systolic}, RWMA: {state.lv.rwma === "Present" ? `Present in ${state.lv.rwmaTerritory}` : "Absent"}, Diastolic: {state.lv.diastolic}, LVH: {state.lv.lvh}</div>
-                  <div><strong>Right Ventricle (RV):</strong> Size: {state.rv.size}, Systolic function: {state.rv.function}</div>
-                  <div><strong>Atria & Septa:</strong> LA Size: {state.laRa.laSize}, RA Size: {state.laRa.raSize}, IAS: {state.ias}</div>
+                  <div>
+                    <strong>Left Ventricle (LV):</strong> {
+                      (state.lv.size === "Normal" && state.lv.systolic === "Normal" && state.lv.rwma === "Absent" && state.lv.diastolic === "Normal" && state.lv.lvh === "None")
+                        ? "Normal"
+                        : `Cavity: ${state.lv.size}, Systolic: ${state.lv.systolic}, RWMA: ${state.lv.rwma === "Present" ? `Present in ${state.lv.rwmaTerritory}` : "Absent"}, Diastolic: ${state.lv.diastolic}, LVH: ${state.lv.lvh}`
+                    }
+                  </div>
+                  <div>
+                    <strong>Right Ventricle (RV):</strong> {
+                      (state.rv.size === "Normal" && state.rv.function === "Normal")
+                        ? "Normal"
+                        : `Size: ${state.rv.size}, Systolic function: ${state.rv.function}`
+                    }
+                  </div>
+                  <div>
+                    <strong>Atria & Septa:</strong> {
+                      (state.laRa.laSize === "Normal" && state.laRa.raSize === "Normal" && state.ias === "Intact")
+                        ? "Normal"
+                        : `LA Size: ${state.laRa.laSize}, RA Size: ${state.laRa.raSize}, IAS: ${state.ias}`
+                    }
+                  </div>
                   
                   {["mitral", "aortic", "tricuspid", "pulmonary"].map(v => {
                     const valve = state.valves[v];
+                    const isNormal = valve.morphology === "Normal" && valve.stenosis === "None" && valve.regurgitation === "None" && !valve.remarks;
                     return (
                       <div key={v}>
-                        <strong>{v.charAt(0).toUpperCase() + v.slice(1)} Valve:</strong> Morphology: {valve.morphology}, Stenosis: {valve.stenosis}, Regurgitation: {valve.regurgitation} {valve.remarks ? ` | Remarks: ${valve.remarks}` : ""}
+                        <strong>{v.charAt(0).toUpperCase() + v.slice(1)} Valve:</strong> {
+                          isNormal
+                            ? "Normal"
+                            : `Morphology: ${valve.morphology}, Stenosis: ${valve.stenosis}, Regurgitation: ${valve.regurgitation}${valve.remarks ? ` | Remarks: ${valve.remarks}` : ""}`
+                        }
                       </div>
                     );
                   })}
 
-                  <div><strong>Doppler & Extra:</strong> Effusion: {state.pericardium.effusion}, Aorta Root: {state.aorta.root}, Ascending Aorta: {state.aorta.ascending}, Clot/Vegetation/Mass: {state.masses.clotVegMass}</div>
+                  <div>
+                    <strong>Doppler & Extra:</strong> {
+                      (state.pericardium.effusion === "None" && state.aorta.root === "Normal" && state.aorta.ascending === "Normal" && state.masses.clotVegMass === "Absent")
+                        ? "Normal"
+                        : `Effusion: ${state.pericardium.effusion}, Aorta Root: ${state.aorta.root}, Ascending Aorta: ${state.aorta.ascending}, Clot/Vegetation/Mass: ${state.masses.clotVegMass}`
+                    }
+                  </div>
                 </div>
 
                 {/* Final Impression Box */}

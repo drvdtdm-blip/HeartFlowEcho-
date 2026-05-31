@@ -120,21 +120,18 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
   const colWidth = (pageWidth - (margin * 2) - 6) / 2; // ~87mm each
   const col2X = margin + colWidth + 6;
 
-  // Let's split measurements into Col A and Col B
-  const colAMeas = [
+  // Let's split measurements into Col A and Col B based on active entries
+  const allMeasDefs = [
     { key: "ivsd", label: "IVSd" },
     { key: "lvidd", label: "LVIDd" },
     { key: "lvids", label: "LVIDs" },
     { key: "lvpwd", label: "LVPWd" },
     { key: "laSize", label: "LA Dimension" },
     { key: "aorticRoot", label: "Aortic Root" },
-    { key: "ef", label: "LVEF (%" }, // We add the unit or write LVEF
-    { key: "fs", label: "Fractional Shortening (FS" },
+    { key: "ef", label: "LVEF" },
+    { key: "fs", label: "Fractional Shortening" },
     { key: "lvMass", label: "LV Mass" },
     { key: "tapse", label: "TAPSE" },
-  ];
-
-  const colBMeas = [
     { key: "rvspPasp", label: "RVSP / PASP" },
     { key: "trVelocity", label: "TR Jet Velocity" },
     { key: "ivcDiameter", label: "IVC Diameter" },
@@ -148,78 +145,105 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
     { key: "mva", label: "Mitral Valve Area (MVA)" },
   ];
 
-  // Draw table header for both columns
-  doc.setFillColor(243, 244, 246); // gray-100
-  doc.rect(margin, y, colWidth, 6, "F");
-  doc.rect(col2X, y, colWidth, 6, "F");
-  
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(31, 41, 55);
+  const activeMeas = allMeasDefs.filter(
+    (item) => state.measurements[item.key] !== undefined && state.measurements[item.key] !== null && state.measurements[item.key] !== ""
+  );
 
-  const drawMeasHeader = (startX) => {
-    doc.text("Parameter", startX + 2, y + 4.5);
-    doc.text("Value", startX + 46, y + 4.5);
-    doc.text("Normal Range", startX + 62, y + 4.5);
-  };
-  drawMeasHeader(margin);
-  drawMeasHeader(col2X);
-  y += 6;
+  const half = Math.ceil(activeMeas.length / 2);
+  const colAMeas = activeMeas.slice(0, half);
+  const colBMeas = activeMeas.slice(half);
 
-  // Let's render the rows
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-
-  const maxRows = Math.max(colAMeas.length, colBMeas.length);
-  for (let i = 0; i < maxRows; i++) {
-    // Alternate row styling background
-    if (i % 2 === 1) {
-      doc.setFillColor(249, 250, 251); // gray-50
-      doc.rect(margin, y, colWidth, 5.5, "F");
-      doc.rect(col2X, y, colWidth, 5.5, "F");
+  if (activeMeas.length > 0) {
+    // Draw table header for both columns
+    doc.setFillColor(243, 244, 246); // gray-100
+    doc.rect(margin, y, colWidth, 6, "F");
+    if (colBMeas.length > 0) {
+      doc.rect(col2X, y, colWidth, 6, "F");
     }
     
-    // Draw horizontal dividers
-    doc.setDrawColor(243, 244, 246); // gray-100
-    doc.line(margin, y + 5.5, margin + colWidth, y + 5.5);
-    doc.line(col2X, y + 5.5, col2X + colWidth, y + 5.5);
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(31, 41, 55);
 
-    // Left Column A
-    if (i < colAMeas.length) {
-      const item = colAMeas[i];
-      const val = state.measurements[item.key];
-      const info = NORMAL_RANGES[item.key] || { hint: "", unit: "" };
-      
-      doc.setFont("helvetica", "bold");
-      doc.text(item.label, margin + 2, y + 4);
-      doc.setFont("helvetica", "normal");
-      
-      const valText = val ? `${val} ${info.unit}` : "-";
-      doc.text(valText, margin + 46, y + 4);
-      doc.setFont("helvetica", "normal");
-      doc.text(info.hint || "", margin + 62, y + 4);
+    const drawMeasHeader = (startX) => {
+      doc.text("Parameter", startX + 2, y + 4.5);
+      doc.text("Value", startX + 46, y + 4.5);
+      doc.text("Normal Range", startX + 62, y + 4.5);
+    };
+    drawMeasHeader(margin);
+    if (colBMeas.length > 0) {
+      drawMeasHeader(col2X);
     }
+    y += 6;
 
-    // Right Column B
-    if (i < colBMeas.length) {
-      const item = colBMeas[i];
-      const val = state.measurements[item.key];
-      const info = NORMAL_RANGES[item.key] || { hint: "", unit: "" };
+    // Let's render the rows
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+
+    const maxRows = Math.max(colAMeas.length, colBMeas.length);
+    for (let i = 0; i < maxRows; i++) {
+      // Alternate row styling background
+      if (i % 2 === 1) {
+        doc.setFillColor(249, 250, 251); // gray-50
+        if (i < colAMeas.length) {
+          doc.rect(margin, y, colWidth, 5.5, "F");
+        }
+        if (i < colBMeas.length) {
+          doc.rect(col2X, y, colWidth, 5.5, "F");
+        }
+      }
       
-      doc.setFont("helvetica", "bold");
-      doc.text(item.label, col2X + 2, y + 4);
-      doc.setFont("helvetica", "normal");
+      // Draw horizontal dividers
+      doc.setDrawColor(243, 244, 246); // gray-100
+      if (i < colAMeas.length) {
+        doc.line(margin, y + 5.5, margin + colWidth, y + 5.5);
+      }
+      if (i < colBMeas.length) {
+        doc.line(col2X, y + 5.5, col2X + colWidth, y + 5.5);
+      }
 
-      const valText = val ? `${val} ${info.unit}` : "-";
-      doc.text(valText, col2X + 46, y + 4);
-      doc.setFont("helvetica", "normal");
-      doc.text(info.hint || "", col2X + 62, y + 4);
+      // Left Column A
+      if (i < colAMeas.length) {
+        const item = colAMeas[i];
+        const val = state.measurements[item.key];
+        const info = NORMAL_RANGES[item.key] || { hint: "", unit: "" };
+        
+        doc.setFont("helvetica", "bold");
+        doc.text(item.label, margin + 2, y + 4);
+        doc.setFont("helvetica", "normal");
+        
+        const valText = val ? `${val} ${info.unit}` : "-";
+        doc.text(valText, margin + 46, y + 4);
+        doc.setFont("helvetica", "normal");
+        doc.text(info.hint || "", margin + 62, y + 4);
+      }
+
+      // Right Column B
+      if (i < colBMeas.length) {
+        const item = colBMeas[i];
+        const val = state.measurements[item.key];
+        const info = NORMAL_RANGES[item.key] || { hint: "", unit: "" };
+        
+        doc.setFont("helvetica", "bold");
+        doc.text(item.label, col2X + 2, y + 4);
+        doc.setFont("helvetica", "normal");
+
+        const valText = val ? `${val} ${info.unit}` : "-";
+        doc.text(valText, col2X + 46, y + 4);
+        doc.setFont("helvetica", "normal");
+        doc.text(info.hint || "", col2X + 62, y + 4);
+      }
+
+      y += 5.5;
     }
-
-    y += 5.5;
+    y += 6; // spacing after measurements
+  } else {
+    doc.setFont("helvetica", "oblique");
+    doc.setFontSize(8.5);
+    doc.setTextColor(107, 114, 128);
+    doc.text("No echocardiographic measurements recorded.", margin, y + 4);
+    y += 10;
   }
-
-  y += 6; // spacing after measurements
 
   // --- Chambers and Valves Section ---
   doc.setFont("helvetica", "bold");

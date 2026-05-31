@@ -3,7 +3,38 @@ import { generateAutoImpression } from "../utils/echoCalculations";
 import { exportReportToPDF } from "../utils/pdfGenerator";
 import { NORMAL_RANGES } from "../utils/echoCalculations";
 
+const MEASUREMENT_DEFS = [
+  { k: "ivsd", label: "IVSd" },
+  { k: "lvidd", label: "LVIDd" },
+  { k: "lvids", label: "LVIDs" },
+  { k: "lvpwd", label: "LVPWd" },
+  { k: "laSize", label: "LA Dimension" },
+  { k: "aorticRoot", label: "Aortic Root" },
+  { k: "ef", label: "LVEF %" },
+  { k: "fs", label: "FS %" },
+  { k: "lvMass", label: "LV Mass" },
+  { k: "tapse", label: "TAPSE" },
+  { k: "rvspPasp", label: "RVSP / PASP" },
+  { k: "trVelocity", label: "TR Velocity" },
+  { k: "ivcDiameter", label: "IVC Diameter" },
+  { k: "eaRatio", label: "Mitral E/A" },
+  { k: "eePrime", label: "Mitral E/e'" },
+  { k: "decelTime", label: "MV Decel Time" },
+  { k: "lvotVti", label: "LVOT VTI" },
+  { k: "avPeakGradient", label: "AV Peak Grad" },
+  { k: "avMeanGradient", label: "AV Mean Grad" },
+  { k: "mvGradient", label: "MV Mean Grad (MS)" },
+  { k: "mva", label: "Mitral Valve Area" },
+];
+
 export default function ReviewExport({ state, onChange, onSaveReport, hospitalHeader }) {
+  const activeMeasurements = MEASUREMENT_DEFS.filter(
+    (item) => state.measurements[item.k] !== undefined && state.measurements[item.k] !== null && state.measurements[item.k] !== ""
+  );
+
+  const half = Math.ceil(activeMeasurements.length / 2);
+  const colAMeas = activeMeasurements.slice(0, half);
+  const colBMeas = activeMeasurements.slice(half);
   const [showPreview, setShowPreview] = useState(false);
   const autoImpression = generateAutoImpression(state);
 
@@ -182,70 +213,57 @@ export default function ReviewExport({ state, onChange, onSaveReport, hospitalHe
 
                 {/* Measurements Grid */}
                 <div className="font-bold text-primary mb-1 border-b pb-0.5 text-[11px]">ECHOCARDIOGRAPHIC MEASUREMENTS</div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Left measurements */}
-                  <table className="w-full border-collapse border border-gray-200 text-[9px]">
-                    <thead>
-                      <tr className="bg-gray-100 border-b border-gray-200">
-                        <th className="p-1 text-left border-r border-gray-200">Parameter</th>
-                        <th className="p-1 text-left border-r border-gray-200">Value</th>
-                        <th className="p-1 text-left">Normal</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { k: "ivsd", label: "IVSd" },
-                        { k: "lvidd", label: "LVIDd" },
-                        { k: "lvids", label: "LVIDs" },
-                        { k: "lvpwd", label: "LVPWd" },
-                        { k: "laSize", label: "LA Dimension" },
-                        { k: "aorticRoot", label: "Aortic Root" },
-                        { k: "ef", label: "LVEF %" },
-                        { k: "fs", label: "FS %" },
-                        { k: "lvMass", label: "LV Mass" },
-                        { k: "tapse", label: "TAPSE" },
-                      ].map(({ k, label }) => (
-                        <tr className="border-b border-gray-200" key={k}>
-                          <td className="p-1 font-bold border-r border-gray-200">{label}</td>
-                          <td className="p-1 border-r border-gray-200">{state.measurements[k] ? `${state.measurements[k]} ${NORMAL_RANGES[k].unit}` : "-"}</td>
-                          <td className="p-1 text-gray-500">{NORMAL_RANGES[k].hint}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                {activeMeasurements.length === 0 ? (
+                  <div className="text-center text-gray-500 py-3 border rounded bg-gray-50 mb-4 text-[10px] italic">
+                    No measurements entered.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Left measurements */}
+                    {colAMeas.length > 0 ? (
+                      <table className="w-full border-collapse border border-gray-200 text-[9px]">
+                        <thead>
+                          <tr className="bg-gray-100 border-b border-gray-200">
+                            <th className="p-1 text-left border-r border-gray-200">Parameter</th>
+                            <th className="p-1 text-left border-r border-gray-200">Value</th>
+                            <th className="p-1 text-left">Normal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {colAMeas.map(({ k, label }) => (
+                            <tr className="border-b border-gray-200" key={k}>
+                              <td className="p-1 font-bold border-r border-gray-200">{label}</td>
+                              <td className="p-1 border-r border-gray-200">{state.measurements[k]} {NORMAL_RANGES[k].unit}</td>
+                              <td className="p-1 text-gray-500">{NORMAL_RANGES[k].hint}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : <div></div>}
 
-                  {/* Right measurements */}
-                  <table className="w-full border-collapse border border-gray-200 text-[9px]">
-                    <thead>
-                      <tr className="bg-gray-100 border-b border-gray-200">
-                        <th className="p-1 text-left border-r border-gray-200">Parameter</th>
-                        <th className="p-1 text-left border-r border-gray-200">Value</th>
-                        <th className="p-1 text-left">Normal</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { k: "rvspPasp", label: "RVSP / PASP" },
-                        { k: "trVelocity", label: "TR Velocity" },
-                        { k: "ivcDiameter", label: "IVC Diameter" },
-                        { k: "eaRatio", label: "Mitral E/A" },
-                        { k: "eePrime", label: "Mitral E/e'" },
-                        { k: "decelTime", label: "MV Decel Time" },
-                        { k: "lvotVti", label: "LVOT VTI" },
-                        { k: "avPeakGradient", label: "AV Peak Grad" },
-                        { k: "avMeanGradient", label: "AV Mean Grad" },
-                        { k: "mvGradient", label: "MV Mean Grad (MS)" },
-                        { k: "mva", label: "Mitral Valve Area" },
-                      ].map(({ k, label }) => (
-                        <tr className="border-b border-gray-200" key={k}>
-                          <td className="p-1 font-bold border-r border-gray-200">{label}</td>
-                          <td className="p-1 border-r border-gray-200">{state.measurements[k] ? `${state.measurements[k]} ${NORMAL_RANGES[k].unit}` : "-"}</td>
-                          <td className="p-1 text-gray-500">{NORMAL_RANGES[k].hint}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    {/* Right measurements */}
+                    {colBMeas.length > 0 ? (
+                      <table className="w-full border-collapse border border-gray-200 text-[9px]">
+                        <thead>
+                          <tr className="bg-gray-100 border-b border-gray-200">
+                            <th className="p-1 text-left border-r border-gray-200">Parameter</th>
+                            <th className="p-1 text-left border-r border-gray-200">Value</th>
+                            <th className="p-1 text-left">Normal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {colBMeas.map(({ k, label }) => (
+                            <tr className="border-b border-gray-200" key={k}>
+                              <td className="p-1 font-bold border-r border-gray-200">{label}</td>
+                              <td className="p-1 border-r border-gray-200">{state.measurements[k]} {NORMAL_RANGES[k].unit}</td>
+                              <td className="p-1 text-gray-500">{NORMAL_RANGES[k].hint}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : <div></div>}
+                  </div>
+                )}
 
                 {/* Structured Findings */}
                 <div className="font-bold text-primary mb-1 border-b pb-0.5 text-[11px]">2D AND DOPPLER VALVE FINDINGS</div>

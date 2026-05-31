@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { changePassword } from "../utils/security";
+import { Lock, CheckCircle, AlertCircle } from "lucide-react";
+
 
 export default function AdminPanel({
   hospitalHeader,
@@ -9,6 +12,46 @@ export default function AdminPanel({
   onResetTemplates,
 }) {
   const [newDoctor, setNewDoctor] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+
+  const handlePasswordChangeSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      setPasswordError("All password fields are required.");
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      setPasswordError("New password must be at least 4 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      const success = await changePassword(oldPassword, newPassword);
+      if (success) {
+        setPasswordSuccess("Password updated successfully!");
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+      } else {
+        setPasswordError("Incorrect current password.");
+      }
+    } catch (err) {
+      setPasswordError("An error occurred. Please try again.");
+    }
+  };
 
   const handleHeaderChange = (key, val) => {
     onChangeHeader({
@@ -129,6 +172,69 @@ export default function AdminPanel({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Security / Password Management */}
+        <div>
+          <h3 className="text-md font-bold text-primary border-b pb-1 mb-4 flex items-center gap-2">
+            <Lock size={18} />
+            <span>Security & Password Management</span>
+          </h3>
+          <form onSubmit={handlePasswordChangeSubmit} className="max-w-md space-y-4">
+            <div className="form-group">
+              <label className="form-label" htmlFor="old-password-input">Current Password</label>
+              <input
+                type="password"
+                id="old-password-input"
+                className="form-control"
+                placeholder="••••••••"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="form-group">
+                <label className="form-label" htmlFor="new-password-input">New Password</label>
+                <input
+                  type="password"
+                  id="new-password-input"
+                  className="form-control"
+                  placeholder="Minimum 4 chars"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="confirm-new-password-input">Confirm New Password</label>
+                <input
+                  type="password"
+                  id="confirm-new-password-input"
+                  className="form-control"
+                  placeholder="Repeat password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {passwordError && (
+              <div className="error-message bg-danger-light text-danger flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium border border-danger">
+                <AlertCircle size={14} className="flex-shrink-0" />
+                <span>{passwordError}</span>
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="success-message bg-emerald-50 text-success flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium border border-success">
+                <CheckCircle size={14} className="flex-shrink-0" />
+                <span>{passwordSuccess}</span>
+              </div>
+            )}
+
+            <button type="submit" className="btn btn-primary btn-sm mt-2">
+              Update Password
+            </button>
+          </form>
         </div>
 
         {/* Database & Reset Controls */}

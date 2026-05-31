@@ -6,9 +6,10 @@ import DopplerExtra from "./components/DopplerExtra";
 import ReviewExport from "./components/ReviewExport";
 import ReportHistory from "./components/ReportHistory";
 import AdminPanel from "./components/AdminPanel";
+import Login from "./components/Login";
 import { TEMPLATES, DEFAULT_REPORT_STATE } from "./utils/templates";
 import { generateAutoImpression } from "./utils/echoCalculations";
-import { Heart, User, ClipboardList, Database, Sliders, CheckSquare, Stethoscope, ChevronRight } from "lucide-react";
+import { Heart, User, ClipboardList, Database, Sliders, CheckSquare, Stethoscope, ChevronRight, LogOut } from "lucide-react";
 import "./App.css";
 
 const DEFAULT_DOCTORS = [
@@ -26,6 +27,9 @@ const DEFAULT_HEADER = {
 };
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem("echo_authenticated") === "true";
+  });
   const [activeTab, setActiveTab] = useState("patient");
   const [reportState, setReportState] = useState(() => {
     const saved = localStorage.getItem("active_echo_report");
@@ -204,6 +208,10 @@ export default function App() {
     alert("Templates reset to standard baseline.");
   };
 
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="app-container">
       {/* Top hospital header */}
@@ -238,6 +246,20 @@ export default function App() {
 
           <button onClick={handleNewReport} className="btn btn-outline btn-sm">
             New Report
+          </button>
+
+          <button
+            onClick={() => {
+              if (window.confirm("Are you sure you want to log out and lock the application?")) {
+                sessionStorage.removeItem("echo_authenticated");
+                setIsAuthenticated(false);
+              }
+            }}
+            className="header-logout-btn"
+            title="Logout and lock portal"
+          >
+            <LogOut size={14} />
+            <span>Logout</span>
           </button>
         </div>
       </header>

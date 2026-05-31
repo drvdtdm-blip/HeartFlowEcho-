@@ -450,8 +450,7 @@ export function exportReportToPDF(state, hospitalHeader = {}) {
   doc.setTextColor(75, 85, 99);
   doc.text("Clinical Cardiologist", pageWidth - margin - 60, y);
 
-  // Time generated stamp (on bottom left)
-  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+  // Time generated stamp removed per request
 
   // --- Medical Disclaimer (Sticky to page bottom) ---
   const disclaimerY = 285;

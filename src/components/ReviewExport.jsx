@@ -329,7 +329,6 @@ export default function ReviewExport({ state, onChange, onSaveReport, hospitalHe
                 {/* Footer Signature */}
                 <div className="flex justify-between items-end mt-8 pt-4 border-t border-gray-200">
                   <div className="text-[9px] text-gray-500">
-                    <div>Generated: {new Date().toLocaleString()}</div>
                     <div>Vision Heart Centre, Rewa, MP, India (IAE TTE standard layout)</div>
                   </div>
                   <div className="text-right text-[10px]">
